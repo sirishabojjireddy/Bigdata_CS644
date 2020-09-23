@@ -1,0 +1,230 @@
+
+Setup the environment
+________________________
+
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.0.2.jdk/Contents/Home
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=${JAVA_HOME}/bin:$PATH
+export HADOOP_CLASSPATH=${JAVA_HOME}/lib/Flight_Data.jar
+export PATH=$PATH:/usr/local/hadoop/bin
+export OOZIE_HOME=/usr/local/oozie/distro/target/oozie-4.3.0-distro/oozie-4.3.0
+export PATH=$PATH:$OOZIE_HOME/bin
+
+_______________________________________________________________________________________________________________________
+
+Algorithm 
+__________
+
+1. Create input folder with the input csv files
+
+2. Upload oozie's share file to HDFS:
+$ cd $OOZIE_HOME
+$ sudo tar xvf oozie-sharelib-4.3.0.tar.gz #change the sharelib name to your local sharelib name
+$ cd $HADOOP_HOME
+$ hdfs dfs -put $OOZIE_HOME/share share
+
+3. Upload workflow.xml to HDFS:
+$ hdfs dfs -mkdir finalproject
+$ hdfs dfs -put workflow.xml finalproject
+
+4. Compile the Scala application and make a jar file and upload the jar file to HDFS finalproject/lib:
+$ hadoop com.sun.tools.javac.Main *.java
+$ jar cf Flight_Data.jar *.class
+$ hdfs dfs -mkdir finalproject/lib
+$ hdfs dfs -put Flight_Data.jar finalproject/lib
+
+5. Initialize the database of oozie:
+$ $OOZIE_HOME/bin/ooziedb.sh create -sqlfile oozie.sql -run
+
+6. Start oozie:
+$ $OOZIE_HOME/bin/oozied.sh start
+
+7. Check the status of oozie, if shows System mode: NORMAL, do next step:
+$ $OOZIE_HOME/bin/oozie admin -oozie http://localhost:11000/oozie -status
+
+8. Run the program:
+$ oozie job -oozie http://localhost:11000/oozie -config job.properties -run
+
+9. See the job status in the oozie workflow, type this address in any web browser:
+Public DNS of master VM:11000
+(On this website you can also know the oozie workflow execution time)
+
+
+_______________________________________________________________________________________________________________________
+
+
+
+OOZIE WORKOUTS
+_______________
+
+Step 1: Installing OOZIE
+
+Untar the oozie 4.3.0 tar package and move to the common directory and give the respective permissions.
+
+cd ~/install
+
+tar xvzf oozie.tar.gz
+
+sudo mv oozie /usr/local/
+
+Set Path to run from anywhere
+
+vi ~/.bashrc
+
+export PATH=$PATH:/usr/local/oozie/bin
+
+save and quit
+
+Run below command to get effect of environment variable immediately
+
+source ~/.bashrc
+
+Step 2: Configuring OOZIE
+
+Add the following property in core-site.xml.
+
+vi /usr/local/hadoop/etc/hadoop/core-site.xml
+
+<property>
+
+<name>hadoop.proxyuser.hduser.hosts</name>
+
+<value>*</value>
+
+</property>
+
+<property>
+
+<name>hadoop.proxyuser.hduser.groups</name> <value>*</value>
+
+</property>
+
+Add the following property in core-site.xml.
+
+vi /usr/local/hadoop/etc/hadoop/yarn-site.xml
+
+<property>
+
+<name>yarn.log-aggregation-enable</name>
+
+<value>true</value>
+
+</property>
+
+Change the am-resouce property in capacity-scheduler.xml from 0.1 to 0.5 as below.
+
+vi /usr/local/hadoop/etc/hadoop/capacity-scheduler.xml
+
+<property>
+
+<name>yarn.scheduler.capacity.maximum-am-resource-percent</name>
+
+<value>0.5</value>
+
+<description>
+
+Maximum percent of resources in the cluster which can be used to run
+
+application masters i.e. controls number of concurrent running
+
+applications.
+
+</description>
+
+</property>
+
+Step 3: Restart YARN services
+
+1. Stop yarn services
+
+stop-yarn.sh
+
+2. start yarn services
+
+start-yarn.sh
+
+Step 4: Setup oozie
+
+Create sharelib directory in Hadoop
+
+oozie-setup.sh sharelib create -fs hdfs://localhost:54310 hadoop fs –mkdir /user/hduser/share/lib/sqoop
+
+hadoop fs –put /usr/local/sqoop/lib/*.jar share/lib/sqoop/
+
+hadoop fs –put /usr/local/sqoop/mysql-connector-java.jar share/lib
+
+hadoop fs –mkdir /user/hduser/share/lib/hive
+
+hadoop fs –put /usr/local/sqoop/lib/*.jar share/lib/sqoop/
+
+hadoop fs –mkdir –p /user/hduser/oozie/
+
+hadoop fs –put /home/hduser/install/oozieusecases/* /user/hduser/oozie
+
+Step 4: Running oozie Job
+
+Start oozie service
+
+oozied.sh start
+
+Submit job in oozie
+
+oozie job -oozie http://localhost:11000/oozie -config /user/hduser/usecase1/job.properties -run
+
+Monitor job in web UI
+
+http://localhost:11000/oozie
+
+Get info about job
+
+oozie job -oozie
+
+http://localhost:11000/oozie
+
+http://localhost:11000/oozie
+
+http://localhost:11000/oozie
+
+–info <jobid>
+
+Get log about job
+
+oozie job -oozie
+
+–log <jobid>
+
+To kill the job
+
+oozie job -oozie
+
+–kill <jobid>
+_______________________________________________________________________________________________________________
+
+
+For Fully Distributed Mode
+_____________________________
+
+1) Created 2 VMs -> 1 namenode and 1 datanode
+
+2) Configured the VM and execute the SSH connection 
+
+3) ssh -i "SiriBojjiEC2key.pem" ec2-user@ec2-3-16-113-71.us-east-2.compute.amazonaws.com
+
+4) ) Start Hadoop, HDFS and YARN
+
+5) Setup Hadoop configurations in a .sh file with the following ccommands
+
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.0.2.jdk/Contents/Home
+export PATH=${JAVA_HOME}/bin:$PATH
+export HADOOP_CLASSPATH=$(hadoop classpath):.
+export CLASSPATH=$(hadoop classpath):.
+
+6) Run the Scala application 
+
+7) Run the Oozie workflow for the 3 mapreduce jobs
+
+8) continue the same steps for n number of VM and note their execution time
+
+
+
+

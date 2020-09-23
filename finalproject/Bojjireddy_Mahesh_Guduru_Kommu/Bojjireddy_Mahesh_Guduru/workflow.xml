@@ -1,0 +1,23 @@
+<workflow-app name="spark-FlightAnalysis" xmlns="uri:oozie:workflow:0.5"> 
+        <start to="spark-action"/> 
+        <action name="spark-action"> 
+                <spark xmlns="uri:oozie:spark-action:0.1"> 
+                        <job-tracker>${jobTracker}</job-tracker> 
+                        <name-node>${nameNode}</name-node> 
+                        <configuration> 
+                        </configuration> 
+                        <master>${master}</master> 
+                        <name>spark Flight Analysis</name> 
+                        <class>com.spark.hackathon.FlightAnalysis</class> 
+                        <jar>${nameNode}/tmp/sparkOozieAction/lib/Flight_Data.jar</jar> 
+                        <spark-opts>--driver-memory 512m --executor-memory 512m --num-executors 1</spark-opts> 
+                        <arg>10</arg> 
+                </spark> 
+                <ok to="end"/> 
+                <error to="kill"/> 
+        </action> 
+        <kill name="kill"> 
+                <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message> 
+        </kill> 
+        <end name="end"/> 
+</workflow-app> 

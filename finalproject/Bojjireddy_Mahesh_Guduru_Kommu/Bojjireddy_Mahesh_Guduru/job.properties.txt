@@ -1,0 +1,9 @@
+nameNode=hdfs://master:9000
+jobTracker=master:8032
+queueName=default
+examplesRoot=cs644project
+inputFilePath=Users/SirishaBojjireddy/Document/courses/CS644_bigdata/finalproject/input/
+
+
+oozie.wf.application.path=${nameNode}/user/${user.name}/${examplesRoot}/workflow.xml
+#outputDir=map-reduce
