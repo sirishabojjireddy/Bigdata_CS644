@@ -1,0 +1,53 @@
+
+
+Job 1
+_____
+
+Mapper1 
+________
+
+1) Lowecase conversion of each word -> to discard confusions of similar words like HI, Hi and hi
+
+2) For each word, 
+	i)    Perform the WordCount algorithm using the tokenizer to split the words
+	ii)   Emit the word count with a '*' to keep track of the total word count -> counter
+
+3) For each word, emit the word and adjacent word to it (both leftside word and rightside word)
+
+
+Combiner
+________
+
+Aggregate the WordCount for wordpairs as well as individual words -> helps reducer 
+
+
+Reducer1
+________
+
+1) Count total word count with the '*' flag and adjacent word count
+
+2) For each word, find the relative frequency and output to intermediate output 
+
+
+Job 2
+_____
+
+Mapper2 
+________
+
+1) Read the intermediate output as input
+
+2) Emit key, value pairs where relative frequency is the key and adjacent word pairs is the value
+
+3) Use DescendingKeyComparator to sort the output in the descending order of relative frequencies
+
+
+
+Reducer2
+________
+
+1) Ignore wordpairs with relative frequency 1.0
+
+2) Write the top 100 word pairs output to a top100.txt file  
+
+	
